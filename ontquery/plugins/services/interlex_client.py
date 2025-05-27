@@ -13,7 +13,7 @@ from ontquery import exceptions as exc
 
 @deco.interlex_api_key
 class InterLexClient(InterlexSession):
-    """ Connects to SciCrunch via its' api endpoints
+    """Connects to SciCrunch via its' api endpoints
 
     Purpose is to allow external curators to add entities and annotations to
     those entities.
@@ -66,22 +66,24 @@ class InterLexClient(InterlexSession):
     class IncorrectAuthError(Error):
         """Incorrect authentication key for testing websites."""
 
-    default_base_url = 'https://scicrunch.org/api/1/'
-    ilx_base_url = 'http://uri.interlex.org/base/'
+    default_base_url = "https://scicrunch.org/api/1/"
+    ilx_base_url = "http://uri.interlex.org/base/"
     entity_types = (
-        'term',
-        'TermSet',
-        'pde',
-        'cde',
-        'fde',
-        'annotation',
-        'relationship',
+        "term",
+        "TermSet",
+        "pde",
+        "cde",
+        "fde",
+        "annotation",
+        "relationship",
     )
 
-    def __init__(self,
-                 base_url: str = default_base_url,
-                 key: str = None,):
-        """ SciCrunch's InterLex API init for add/update functions.
+    def __init__(
+        self,
+        base_url: str = default_base_url,
+        key: str = None,
+    ):
+        """SciCrunch's InterLex API init for add/update functions.
 
             InterLex API Delete functions on entity level do not exist. Please test on
             https://test3.scicrunch.org/api/1/ first for base_url. If mistakes are made on entities,
@@ -96,23 +98,22 @@ class InterLexClient(InterlexSession):
 
     @staticmethod
     def get_ilx_fragment(ilx_id: str, fragment: bool = False) -> str:
-        """ Convert InterLex ID or IRI to its fragment alternative (ie ilx_#)
+        """Convert InterLex ID or IRI to its fragment alternative (ie ilx_#)
 
-            :param str ilx_id: InterLex ID or IRI.
-            :return: str
+        :param str ilx_id: InterLex ID or IRI.
+        :return: str
 
-            >>> get_ilx_fragment('http://uri.interlex.org/base/ilx_0101431')
-            ilx_0101431
-            >>> get_ilx_fragment('ILX:0101431')
-            ilx_0101431
+        >>> get_ilx_fragment('http://uri.interlex.org/base/ilx_0101431')
+        ilx_0101431
+        >>> get_ilx_fragment('ILX:0101431')
+        ilx_0101431
         """
         if not ilx_id:
-            raise ValueError(f'ILX ID cannot be None!')
-        ilx_id = ilx_id.rsplit('/', 1)[-1]
-        if ilx_id[:3].lower() not in ['tmp', 'ilx', 'pde', 'cde']:
-            raise ValueError(
-                f"Provided ID {ilx_id} could not be determined as InterLex ID.")
-        return ilx_id.replace(':', '_').lower()
+            raise ValueError(f"ILX ID cannot be None!")
+        ilx_id = ilx_id.rsplit("/", 1)[-1]
+        if ilx_id[:3].lower() not in ["tmp", "ilx", "pde", "cde"]:
+            raise ValueError(f"Provided ID {ilx_id} could not be determined as InterLex ID.")
+        return ilx_id.replace(":", "_").lower()
 
     def get_ilx_iri(self, ilx_id: str) -> str:
         """
@@ -125,36 +126,34 @@ class InterLexClient(InterlexSession):
             str: InterLex IRI
         """
         fragment = self.get_ilx_fragment(ilx_id)
-        return f'http://uri.interlex.org/base/{fragment}'
+        return f"http://uri.interlex.org/base/{fragment}"
 
     @staticmethod
-    def _check_type(element: Any,
-                    types: Union[Any, List[Any]]) -> Any:
-        """ Check if element is an  accepted types provided.
+    def _check_type(element: Any, types: Union[Any, List[Any]]) -> Any:
+        """Check if element is an  accepted types provided.
 
-            :param element: Field value.
-            :param types: Usable types
-            :return: Original element
+        :param element: Field value.
+        :param types: Usable types
+        :return: Original element
         """
         if not isinstance(element, types):
             TypeError(f"Element {element} needs to be of type {types}")
         return element
 
     @staticmethod
-    def _check_value(element: Any,
-                     values: tuple) -> Any:
-        """ Check if element is in accepted values provided.
+    def _check_value(element: Any, values: tuple) -> Any:
+        """Check if element is in accepted values provided.
 
-            :param element: Field value.
-            :param values: Hardcoded values SciCrunch expects.
-            :return: Original element
+        :param element: Field value.
+        :param values: Hardcoded values SciCrunch expects.
+        :return: Original element
         """
         if element not in values:
             ValueError(f"Element {element} needs to be a value from {values}")
         return element
 
     def _check_dict(self, element: dict, ref: dict) -> Any:
-        """ Makes sure dictionary fields make key value and value type
+        """Makes sure dictionary fields make key value and value type
 
         :param element: target dictionary
         :param ref: reference dictionary
@@ -168,15 +167,16 @@ class InterLexClient(InterlexSession):
         """
         for key, value in ref.items():
             if not element.get(key):
-                raise self.MissingKeyError(
-                    f"Missing key {key} in dictionary {element}")
+                raise self.MissingKeyError(f"Missing key {key} in dictionary {element}")
             self._check_type(element[key], value)
 
-    def _process_field(self,
-                       field: Union[str, int],
-                       accepted_types: tuple,
-                       accepted_values: tuple = None,) -> Union[str, int]:
-        """ Check if single field is following guidelines for type and/or value acceptance
+    def _process_field(
+        self,
+        field: Union[str, int],
+        accepted_types: tuple,
+        accepted_values: tuple = None,
+    ) -> Union[str, int]:
+        """Check if single field is following guidelines for type and/or value acceptance
 
         :param accepted_types: Review if field is a usable type.
         :param accepted_values: Hard check if field value is in accepted values.
@@ -188,10 +188,12 @@ class InterLexClient(InterlexSession):
         return field
 
     @staticmethod
-    def _remove_records(ref_records: List[dict],
-                        records: List[dict],
-                        on: Union[List[str], str],) -> List[dict]:
-        """ Removes match records on field value matches.
+    def _remove_records(
+        ref_records: List[dict],
+        records: List[dict],
+        on: Union[List[str], str],
+    ) -> List[dict]:
+        """Removes match records on field value matches.
 
         :param on: Exact composite key value check.
         """
@@ -200,11 +202,7 @@ class InterLexClient(InterlexSession):
         old_indexes_to_remove = []
         for i, ref_record in enumerate(ref_records):
             for record in records:
-                on_hit = all([
-                    True if ref_record[key].lower().strip() == record.get(key, '').lower().strip()
-                    else False
-                    for key in on
-                ])
+                on_hit = all([True if ref_record[key].lower().strip() == record.get(key, "").lower().strip() else False for key in on])
                 if on_hit is True:
                     old_indexes_to_remove.append(i)
         for i in sorted(old_indexes_to_remove, reverse=True):
@@ -212,12 +210,14 @@ class InterLexClient(InterlexSession):
         return ref_records
 
     @staticmethod
-    def _merge_records(ref_records: List[dict],
-                       records: List[dict],
-                       on: Union[List[str], str] = None,
-                       alt: Union[List[str], str] = None,
-                       passive: bool = False,) -> List[dict]:
-        """ Merge records
+    def _merge_records(
+        ref_records: List[dict],
+        records: List[dict],
+        on: Union[List[str], str] = None,
+        alt: Union[List[str], str] = None,
+        passive: bool = False,
+    ) -> List[dict]:
+        """Merge records
             "on" specified fields.
             "alt" update record if ref record is missing data.
             "passive" append instead of update on "alt" version.
@@ -226,8 +226,11 @@ class InterLexClient(InterlexSession):
         :param alt: Fields to logically update if exact keys all match.
         :param passive: Append instead of update record if alt is found.
         """
+
         # Makes sure merge is never empty
-        def clean(s): return s.lower().strip()
+        def clean(s):
+            return s.lower().strip()
+
         on = on or []
         alt = alt or []
         if on is []:
@@ -242,11 +245,7 @@ class InterLexClient(InterlexSession):
         for i, record in enumerate(records):
             for j, ref_record in enumerate(ref_records):
                 # True if unique keys match
-                on_hit = all([
-                    True if clean(ref_record[key]) == clean(record.get(key, ''))
-                    else False
-                    for key in on
-                ])
+                on_hit = all([True if clean(ref_record[key]) == clean(record.get(key, "")) else False for key in on])
                 # If no match
                 if on_hit is False:
                     continue
@@ -255,11 +254,7 @@ class InterLexClient(InterlexSession):
                     new_indexes_to_remove.append(i)
                     break
                 # True if any differences in non-unique keys
-                alt_hit = any([
-                    True if (clean(ref_record[key]) != clean(record.get(key, ''))) and (not ref_record[key])
-                    else False
-                    for key in alt
-                ])
+                alt_hit = any([True if (clean(ref_record[key]) != clean(record.get(key, ""))) and (not ref_record[key]) else False for key in alt])
                 # Failed second chance, it already exists
                 if alt_hit is False:
                     new_indexes_to_remove.append(i)
@@ -277,8 +272,10 @@ class InterLexClient(InterlexSession):
         return ref_records + records
 
     @staticmethod
-    def _remove_duplicate_records(records: List[dict],
-                                  on: Union[List[str], str],) -> List[dict]:
+    def _remove_duplicate_records(
+        records: List[dict],
+        on: Union[List[str], str],
+    ) -> List[dict]:
         unique_records = []
         visited = {}
         for record in records:
@@ -290,7 +287,7 @@ class InterLexClient(InterlexSession):
         return unique_records
 
     def _process_synonyms(self, synonyms: Union[List[dict], List[str]]) -> List[dict]:
-        """ Make sure synonyms match indented input.
+        """Make sure synonyms match indented input.
 
         :param synonyms: Synonyms of entity.
         """
@@ -306,23 +303,27 @@ class InterLexClient(InterlexSession):
         for synonym in synonyms:
             self._check_type(synonym, (str, dict))
             if isinstance(synonym, str):
-                synonym = {'literal': synonym, 'type': '', }
+                synonym = {
+                    "literal": synonym,
+                    "type": "",
+                }
             elif isinstance(synonym, dict):
-                self._check_dict(synonym, ref={'literal': str})
-                synonym = {'literal': synonym['literal'],
-                           'type': synonym.get('type', '') or '', }
+                self._check_dict(synonym, ref={"literal": str})
+                synonym = {
+                    "literal": synonym["literal"],
+                    "type": synonym.get("type", "") or "",
+                }
             else:
                 self._check_type(synonym, (str, dict))
             corrected_synonyms.append(synonym)
-        corrected_synonyms = self._remove_duplicate_records(
-            corrected_synonyms, on=['literal', 'type'])
+        corrected_synonyms = self._remove_duplicate_records(corrected_synonyms, on=["literal", "type"])
         return corrected_synonyms
 
     def _process_superclass(self, superclass: str) -> Optional[List[dict]]:
         if not superclass:
             return None
         superclass = self.get_ilx_fragment(superclass)
-        return [{'ilx': superclass}]
+        return [{"ilx": superclass}]
 
     def _process_existing_ids(self, existing_ids: List[dict]) -> List[dict]:
         """ Making sure existing_id items are in proper format for entity.
@@ -339,9 +340,8 @@ class InterLexClient(InterlexSession):
             )
         """
 
-        def fix_existing_ids_preferred(_existing_ids: List[dict],
-                                       ranking: list = None) -> List[dict]:
-            """ Give value 1 to top preferred existing id; 0 otherwise.
+        def fix_existing_ids_preferred(_existing_ids: List[dict], ranking: list = None) -> List[dict]:
+            """Give value 1 to top preferred existing id; 0 otherwise.
 
                 Will using the ranking list to score each existing id curie prefix
                 and will sort top preferred to the top. Top will get preferred = 1,
@@ -351,40 +351,38 @@ class InterLexClient(InterlexSession):
             :param ranking: custom ranking for existing ids. Default: None
             :return: entity existing ids preferred field fixed based on ranking.
             """
-            _existing_ids = self._remove_duplicate_records(
-                _existing_ids, on=['curie', 'iri'])
+            _existing_ids = self._remove_duplicate_records(_existing_ids, on=["curie", "iri"])
             ranked_existing_ids: List[Tuple[int, dict]] = []
             preferred_fixed_existing_ids: List[dict] = []
             if not ranking:
                 ranking = [
-                    'CHEBI',
-                    'NCBITaxon',
-                    'COGPO',
-                    'CAO',
-                    'DICOM',
-                    'UBERON',
-                    'FMA',
-                    'NLX',
-                    'NLXANAT',
-                    'NLXCELL',
-                    'NLXFUNC',
-                    'NLXINV',
-                    'NLXORG',
-                    'NLXRES',
-                    'NLXSUB'
-                    'BIRNLEX',
-                    'SAO',
-                    'NDA.CDE',
-                    'PR',
-                    'IAO',
-                    'NIFEXT',
-                    'OEN',
-                    'MESH',
-                    'NCIM',
-                    'ILX.SET',
-                    'ILX.PDE',
-                    'ILX.CDE',
-                    'npokb',
+                    "CHEBI",
+                    "NCBITaxon",
+                    "COGPO",
+                    "CAO",
+                    "DICOM",
+                    "UBERON",
+                    "FMA",
+                    "NLX",
+                    "NLXANAT",
+                    "NLXCELL",
+                    "NLXFUNC",
+                    "NLXINV",
+                    "NLXORG",
+                    "NLXRES",
+                    "NLXSUB" "BIRNLEX",
+                    "SAO",
+                    "NDA.CDE",
+                    "PR",
+                    "IAO",
+                    "NIFEXT",
+                    "OEN",
+                    "MESH",
+                    "NCIM",
+                    "ILX.SET",
+                    "ILX.PDE",
+                    "ILX.CDE",
+                    "npokb",
                     # 'ILX',
                 ]
             # will always be larger than last index :)
@@ -393,45 +391,40 @@ class InterLexClient(InterlexSession):
             ranking = {prefix: ranking.index(prefix) for prefix in ranking}
             # using ranking on curie prefix to get rank
             for ex_id in _existing_ids:
-                prefix = ex_id['curie'].split(':')[0]
+                prefix = ex_id["curie"].split(":")[0]
                 rank = ranking[prefix] if ranking.get(prefix) else default_rank
                 ranked_existing_ids.append((rank, ex_id))
             # sort existing_id curie prefixes ASC using ranking as a reference
-            sorted_ranked_existing_ids = sorted(
-                ranked_existing_ids, key=lambda x: x[0])
+            sorted_ranked_existing_ids = sorted(ranked_existing_ids, key=lambda x: x[0])
             # update preferred to proper ranking and append to new list
             for i, rank_ex_id in enumerate(sorted_ranked_existing_ids):
                 rank, ex_id = rank_ex_id
                 if i == 0:
-                    ex_id['preferred'] = 1
+                    ex_id["preferred"] = 1
                 else:
-                    ex_id['preferred'] = 0
+                    ex_id["preferred"] = 0
                 preferred_fixed_existing_ids.append(ex_id)
-            preferred_fixed_existing_ids = self._remove_duplicate_records(
-                preferred_fixed_existing_ids, on=['curie', 'iri'])
+            preferred_fixed_existing_ids = self._remove_duplicate_records(preferred_fixed_existing_ids, on=["curie", "iri"])
             return preferred_fixed_existing_ids
 
         corrected_existing_ids = []
         self._check_type(existing_ids, list)
         for existing_id in existing_ids:
             self._check_type(existing_id, dict)
-            self._check_dict(existing_id, ref={
-                             'curie': str, 'iri': (str, URIRef)})
-            corrected_existing_ids.append({
-                # todo : replace checktype with expand
-                'iri': str(self._check_type(existing_id['iri'], (str, URIRef))),
-                # todo : replace checktype with qname
-                'curie': self._check_type(existing_id['curie'], str),
-                'preferred': existing_id.get('preferred', '0'),
-            })
+            self._check_dict(existing_id, ref={"curie": str, "iri": (str, URIRef)})
+            corrected_existing_ids.append(
+                {
+                    # todo : replace checktype with expand
+                    "iri": str(self._check_type(existing_id["iri"], (str, URIRef))),
+                    # todo : replace checktype with qname
+                    "curie": self._check_type(existing_id["curie"], str),
+                    "preferred": existing_id.get("preferred", "0"),
+                }
+            )
         return fix_existing_ids_preferred(corrected_existing_ids)
 
-    def query_elastic(self,
-                      term: str = None,
-                      label: str = None,
-                      query: dict = None,
-                      **kwargs) -> Optional[List[dict]]:
-        """ Queries Elastic for term (wild card) or raw query to elastic.
+    def query_elastic(self, term: str = None, label: str = None, query: dict = None, **kwargs) -> Optional[List[dict]]:
+        """Queries Elastic for term (wild card) or raw query to elastic.
 
         :param str term: wild card value to be searched throughout entities.
         :param str label: direct exact matching for label & synonym fields.
@@ -447,67 +440,69 @@ class InterLexClient(InterlexSession):
         # or custom body field.
         """
         params = {
-            'size': '10',
-            'from': '0',
+            "size": "10",
+            "from": "0",
             **kwargs,
         }
         if query:
             # self return if user gives body of query
-            params['query'] = json.dumps(query.get('query', query))
+            params["query"] = json.dumps(query.get("query", query))
         elif label:
-            params['term'] = label
+            params["term"] = label
         elif term:
-            params['term'] = term
+            params["term"] = term
         else:
             return
-        resp = self._get('term/elastic/search', params=params)
+        resp = self._get("term/elastic/search", params=params)
         # Not a mistake; elastic nests the hits twice
-        entities = resp.json()['data']['hits']['hits']
+        entities = resp.json()["data"]["hits"]["hits"]
         # Also not a mistake; actual metadata is inside _source
         if entities:
-            entities = [entity['_source'] for entity in entities]
+            entities = [entity["_source"] for entity in entities]
             # Damn elasticsearch doesn't have a true exact match. We need to double check the output
             if label:
                 exact_entities = []
                 for entity in entities:
-                    if label.strip().lower() == entity['label'].strip().lower():
+                    if label.strip().lower() == entity["label"].strip().lower():
                         exact_entities.append(entity)
-                    elif label.strip().lower() in [syn['literal'].strip().lower() for syn in entity['synonyms']]:
+                    elif label.strip().lower() in [syn["literal"].strip().lower() for syn in entity["synonyms"]]:
                         exact_entities.append(entity)
                 entities = exact_entities
         return entities
 
     def get_entity(self, ilx_id: str) -> dict:
-        """ Get full Entity metadata from its ILX ID.
+        """Get full Entity metadata from its ILX ID.
 
         :param str ilx_id: ILX ID of current Entity.
         """
         ilx_id = self.get_ilx_fragment(ilx_id)
         resp = self._get(f"term/ilx/{ilx_id}")
-        entity = resp.json()['data']
+        entity = resp.json()["data"]
         return entity
 
     # todo even in test env it needs ILX prefix instead of TMP b/c its anchored to existing_ids
     def get_entity_from_curie(self, curie: str) -> dict:
-        """ Pull InterLex entity if curie exists in existing_ids
+        """Pull InterLex entity if curie exists in existing_ids
 
         :param curie: Compressed version of IRI from entity
 
         >>> self.get_entity_from_curie('UBERON:6000015')
         """
-        return self._get(f'term/curie/{curie}').json()['data']
+        return self._get(f"term/curie/{curie}").json()["data"]
 
-    def add_entity(self,
-                   label: str,
-                   type: str,
-                   cid: str = None,
-                   definition: str = None,
-                   comment: str = None,
-                   superclass: str = None,
-                   synonyms: list = None,
-                   existing_ids: list = None,
-                   force: bool = False,
-                   **kwargs) -> dict:
+    def add_entity(
+        self,
+        label: str,
+        type: str,
+        cid: str = None,
+        definition: str = None,
+        comment: str = None,
+        superclass: str = None,
+        synonyms: list = None,
+        existing_ids: list = None,
+        force: bool = False,
+        **kwargs,
+    ) -> dict:
         """ Add Interlex entity into SciCrunch.
 
             Loosely structured ontological data based on the source ontologies for readability.
@@ -545,34 +540,32 @@ class InterLexClient(InterlexSession):
         synonyms = synonyms or []
         existing_ids = existing_ids or []
         entity = {
-            'label': self._process_field(label, accepted_types=(str,)),
-            'type': self._process_field(type, accepted_values=self.entity_types, accepted_types=(str,)),
-            'orig_cid': self._process_field(cid, accepted_types=(str, int)),
-            'cid': self._process_field(cid, accepted_types=(str, int)),
-            'definition': self._process_field(definition, accepted_types=(str,)),
-            'comment': self._process_field(comment, accepted_types=(str,)),
-            'superclasses': self._process_superclass(superclass),
-            'synonyms': self._process_synonyms(synonyms),
-            'existing_ids': self._process_existing_ids(existing_ids),
-            'force': force,
+            "label": self._process_field(label, accepted_types=(str,)),
+            "type": self._process_field(type, accepted_values=self.entity_types, accepted_types=(str,)),
+            "orig_cid": self._process_field(cid, accepted_types=(str, int)),
+            "cid": self._process_field(cid, accepted_types=(str, int)),
+            "definition": self._process_field(definition, accepted_types=(str,)),
+            "comment": self._process_field(comment, accepted_types=(str,)),
+            "superclasses": self._process_superclass(superclass),
+            "synonyms": self._process_synonyms(synonyms),
+            "existing_ids": self._process_existing_ids(existing_ids),
+            "force": force,
         }
-        #entity['batch-elastic'] = 'true'
-        resp = self._post('term/add', data=deepcopy(entity))
-        entity = resp.json()['data']
+        # entity['batch-elastic'] = 'true'
+        resp = self._post("term/add", data=deepcopy(entity))
+        entity = resp.json()["data"]
         if resp.status_code == 200:
-            log.warning(
-                f"You already added {entity['label']} with InterLex ID {entity['ilx']}")
+            log.warning(f"You already added {entity['label']} with InterLex ID {entity['ilx']}")
         # Backend handles more than one. User doesn't need to know.
-        entity['superclass'] = entity.pop('superclasses')
-        if entity['superclass']:
-            entity['superclass'] = 'http://uri.interlex.org/base/' + \
-                entity['superclass'][0]['ilx']
+        entity["superclass"] = entity.pop("superclasses")
+        if entity["superclass"]:
+            entity["superclass"] = "http://uri.interlex.org/base/" + entity["superclass"][0]["ilx"]
         # todo: match structure of input
         # todo: compare if identical; for now test_interlex_client will do
         return entity
 
     def deprecate_entity(self, ilx_id: str) -> dict:
-        """ Annotates for deprecation while updating the status on databases.
+        """Annotates for deprecation while updating the status on databases.
 
             status =  0 :: active
             status = -1 :: hidden
@@ -583,29 +576,28 @@ class InterLexClient(InterlexSession):
         :param ilx_id: ILX ID of entity to be removed.
         :return: Deprecated Record of entity.
         """
-        deprecated_id = 'http://uri.interlex.org/base/ilx_0383241'  # deprecated entity
+        deprecated_id = "http://uri.interlex.org/base/ilx_0383241"  # deprecated entity
         deprecated = self.get_entity(deprecated_id)
-        if (deprecated['label'] != 'deprecated') or (deprecated['type'] != 'annotation'):
-            raise ValueError(
-                'Oops! Annotation "deprecated" was move. Please update deprecated id')
+        if (deprecated["label"] != "deprecated") or (deprecated["type"] != "annotation"):
+            raise ValueError('Oops! Annotation "deprecated" was move. Please update deprecated id')
         # ADD DEPRECATED ANNOTATION
         annotation = self.add_annotation(
             term_ilx_id=ilx_id,
             annotation_type_ilx_id=deprecated_id,
-            annotation_value='True',
+            annotation_value="True",
         )
-        if annotation['value'] != 'True':
-            raise ValueError('Deprecation annotation was not added correctly!')
+        if annotation["value"] != "True":
+            raise ValueError("Deprecation annotation was not added correctly!")
         log.info(annotation)
         # GIVE STATUS -2
-        update = self.update_entity(ilx_id=ilx_id, status='-2')
-        if update['status'] != '-2':
-            raise ValueError('Entity status for deprecation failed!')
+        update = self.update_entity(ilx_id=ilx_id, status="-2")
+        if update["status"] != "-2":
+            raise ValueError("Entity status for deprecation failed!")
         log.info(update)
         return update
 
     def withdraw_entity(self, ilx_id: str) -> dict:
-        """ Annotates for withdraw while updating the status on databases.
+        """Annotates for withdraw while updating the status on databases.
 
             status =  0 :: active
             status = -1 :: hidden
@@ -616,40 +608,38 @@ class InterLexClient(InterlexSession):
         :param ilx_id: ILX ID of entity to be withdrawn.
         :return: Withdraw Record of entity.
         """
-        withdrawn_id = 'http://uri.interlex.org/base/tmp_0746192'  # deprecated entity
+        withdrawn_id = "http://uri.interlex.org/base/tmp_0746192"  # deprecated entity
         withdrawn = self.get_entity(withdrawn_id)
 
-        if (withdrawn['label'] != 'withdrawn') or (withdrawn['type'] != 'annotation'):
-            raise ValueError(
-                'Oops! Annotation "withdrawn" was move. Please update withdrawn id')
+        if (withdrawn["label"] != "withdrawn") or (withdrawn["type"] != "annotation"):
+            raise ValueError('Oops! Annotation "withdrawn" was move. Please update withdrawn id')
         # ADD WITHDRAWN ANNOTATION
         annotation = self.add_annotation(
             term_ilx_id=ilx_id,
             annotation_type_ilx_id=withdrawn_id,
-            annotation_value='True',
+            annotation_value="True",
         )
-        if annotation['value'] != 'True':
-            raise ValueError('Widthraw annotation was not added correctly!')
+        if annotation["value"] != "True":
+            raise ValueError("Widthraw annotation was not added correctly!")
         log.info(annotation)
         # GIVE STATUS -1
-        update = self.update_entity(ilx_id=ilx_id, status='-1')
-        if update['status'] != '-1':
-            raise ValueError('Entity status for withdrawn failed!')
+        update = self.update_entity(ilx_id=ilx_id, status="-1")
+        if update["status"] != "-1":
+            raise ValueError("Entity status for withdrawn failed!")
         log.info(update)
         return update
 
     def replace_entity(self, ilx_id: str, replaced_by_ilx_id: str) -> dict:
-        """ Create a relationship between an entity that is being deprecated and replaced by another entity.
+        """Create a relationship between an entity that is being deprecated and replaced by another entity.
 
         :param ilx_id: ILX ID of Entity to be replaced.
         :param replaced_by_ilx_id: ILX ID of new Entity that is now being used.
         :return: Deprecated Record of entity.
         """
-        replaced_by_id = 'http://uri.interlex.org/base/ilx_0383242'  # replacedBy entity
+        replaced_by_id = "http://uri.interlex.org/base/ilx_0383242"  # replacedBy entity
         replaced_by = self.get_entity(replaced_by_id)
-        if (replaced_by['label'] != 'replacedBy') or (replaced_by['type'] != 'relationship'):
-            raise ValueError(
-                'Oops! "replacedBy" was move. Please update ILX for "Replaced By" annotation')
+        if (replaced_by["label"] != "replacedBy") or (replaced_by["type"] != "relationship"):
+            raise ValueError('Oops! "replacedBy" was move. Please update ILX for "Replaced By" annotation')
         # ADD RELATIONSHIP CONNECTION FROM OLD TO NEW ENTITY
         relationship = self.add_relationship(
             entity1_ilx=ilx_id,
@@ -663,71 +653,64 @@ class InterLexClient(InterlexSession):
         entity = self.get_entity(to_ilx_id)
         deprecated_entity = self.get_entity(from_ilx_id)
         # 1 to 1 FIELDS
-        for field in ['definition', 'comment']:
+        for field in ["definition", "comment"]:
             if not entity[field]:
                 entity[field] = deprecated_entity[field]
         # todo add old superclass to annotations
-        if not entity['superclasses'] and deprecated_entity['superclasses']:
-            entity['superclasses'] = [
-                {'superclass_tid': deprecated_entity['superclasses'][0]['id']}]
+        if not entity["superclasses"] and deprecated_entity["superclasses"]:
+            entity["superclasses"] = [{"superclass_tid": deprecated_entity["superclasses"][0]["id"]}]
         # todo add old label as synonym if different
         # SYNONYM
-        entity['synonyms'] = self._merge_records(
-            ref_records=entity.get('synonyms', []),
-            records=[{'literal': d['literal'], 'type':d['type']}
-                     for d in deprecated_entity.get('synonyms', [])
-                     if d['literal'].lower().strip() != entity['label'].lower().strip()],
-            on=['literal'],
-            alt=['type'],
+        entity["synonyms"] = self._merge_records(
+            ref_records=entity.get("synonyms", []),
+            records=[{"literal": d["literal"], "type": d["type"]} for d in deprecated_entity.get("synonyms", []) if d["literal"].lower().strip() != entity["label"].lower().strip()],
+            on=["literal"],
+            alt=["type"],
         )
-        if deprecated_entity['label'].strip().lower() not in ([entity['label'].strip().lower()] + [v['literal'].strip().lower() for v in entity['synonyms']]):
-            entity['synonyms'].append(
-                {'literal': deprecated_entity['label'], 'type': ''})
+        if deprecated_entity["label"].strip().lower() not in ([entity["label"].strip().lower()] + [v["literal"].strip().lower() for v in entity["synonyms"]]):
+            entity["synonyms"].append({"literal": deprecated_entity["label"], "type": ""})
         # EXISTING ID
-        entity['existing_ids'] += [
-            {'iri': d['iri'], 'curie': d['curie'], 'preferred':d['preferred']}
-            for d in deprecated_entity.get('existing_ids', [])
-            if not d['iri'].startswith('http://uri.interlex.org/base/')
+        entity["existing_ids"] += [
+            {"iri": d["iri"], "curie": d["curie"], "preferred": d["preferred"]} for d in deprecated_entity.get("existing_ids", []) if not d["iri"].startswith("http://uri.interlex.org/base/")
         ]
         # RELATIONSHIP
-        for relationship in deprecated_entity['relationships']:
-            if str(relationship['withdrawn']) != '0':
+        for relationship in deprecated_entity["relationships"]:
+            if str(relationship["withdrawn"]) != "0":
                 continue
-            if from_ilx_id == relationship['term1_ilx']:
+            if from_ilx_id == relationship["term1_ilx"]:
                 entity1_ilx = to_ilx_id
-                entity2_ilx = relationship['term2_ilx']
+                entity2_ilx = relationship["term2_ilx"]
             else:
-                entity1_ilx = relationship['term1_ilx']
+                entity1_ilx = relationship["term1_ilx"]
                 entity2_ilx = to_ilx_id
-            self.add_relationship(
-                entity1_ilx, relationship['relationship_term_ilx'], entity2_ilx)
+            self.add_relationship(entity1_ilx, relationship["relationship_term_ilx"], entity2_ilx)
         # # ANNOTATION
-        for annotation in deprecated_entity['annotations']:
-            if str(annotation['withdrawn']) != '0':
+        for annotation in deprecated_entity["annotations"]:
+            if str(annotation["withdrawn"]) != "0":
                 continue
-            self.add_annotation(
-                to_ilx_id, annotation['annotation_term_ilx'], annotation['value'])
+            self.add_annotation(to_ilx_id, annotation["annotation_term_ilx"], annotation["value"])
         # ReplaceBy relationship connection
         self.replace_entity(from_ilx_id, to_ilx_id)
         # POST
         resp = self._post(f"term/edit/{entity['ilx']}", data=entity)
         # BUG: server response is bad and needs to actually search again to get proper format
-        entity = resp.json()['data']
-        entity['superclass'] = entity.pop('superclasses')
-        if entity['superclass']:
-            entity['superclass'] = 'http://uri.interlex.org/base/' + \
-                entity['superclass'][0]['ilx']
+        entity = resp.json()["data"]
+        entity["superclass"] = entity.pop("superclasses")
+        if entity["superclass"]:
+            entity["superclass"] = "http://uri.interlex.org/base/" + entity["superclass"][0]["ilx"]
         # todo add a sanity check here
         return entity
 
-    def partial_update(self,
-                       curie: str = None,
-                       definition: str = None,
-                       comment: str = None,
-                       superclass: str = None,
-                       synonyms: List[dict] = None,
-                       existing_ids: List[dict] = None,) -> dict:
-        """ Update entity field only if the reference field is empty.
+    def partial_update(
+        self,
+        curie: str = None,
+        definition: str = None,
+        comment: str = None,
+        superclass: str = None,
+        synonyms: List[dict] = None,
+        existing_ids: List[dict] = None,
+    ) -> dict:
+        """Update entity field only if the reference field is empty.
 
         :param curie: Curie of entity within existing ids.
         :param definition: Entities official definition.
@@ -736,37 +719,38 @@ class InterLexClient(InterlexSession):
         :param synonyms: Alternate names of the label.
         :param existing_ids: Alternate/source ontological iri/curies. Can only be one preferred ID.
         """
-        if any([True if curie.lower().startswith(prefix) else False for prefix in ['tmp_', 'tmp:', 'ilx_', 'ilx:']]):
+        if any([True if curie.lower().startswith(prefix) else False for prefix in ["tmp_", "tmp:", "ilx_", "ilx:"]]):
             entity = self.get_entity(curie)
         else:
             entity = self.get_entity_from_curie(curie)
-        if entity['ilx'] is None:
-            raise ValueError(
-                f'curie [{curie}] does not exist yet in InterLex.')
+        if entity["ilx"] is None:
+            raise ValueError(f"curie [{curie}] does not exist yet in InterLex.")
         response = self.update_entity(
-            ilx_id=entity['ilx'],
-            definition=definition if not entity['definition'] else None,
-            comment=comment if not entity['comment'] else None,
-            superclass=superclass if not entity['superclasses'] else None,
+            ilx_id=entity["ilx"],
+            definition=definition if not entity["definition"] else None,
+            comment=comment if not entity["comment"] else None,
+            superclass=superclass if not entity["superclasses"] else None,
             add_existing_ids=existing_ids or [],
             add_synonyms=synonyms or [],
         )
         return response
 
-    def update_entity(self,
-                      ilx_id: str,
-                      label: str = None,
-                      type: str = None,
-                      definition: str = None,
-                      comment: str = None,
-                      superclass: str = None,
-                      cid: str = None,
-                      orig_cid: str = None,
-                      status: str = None,
-                      add_synonyms: Union[List[dict], List[str]] = None,
-                      delete_synonyms: Union[List[dict], List[str]] = None,
-                      add_existing_ids: List[dict] = None,
-                      delete_existing_ids: List[dict] = None, ) -> dict:
+    def update_entity(
+        self,
+        ilx_id: str,
+        label: str = None,
+        type: str = None,
+        definition: str = None,
+        comment: str = None,
+        superclass: str = None,
+        cid: str = None,
+        orig_cid: str = None,
+        status: str = None,
+        add_synonyms: Union[List[dict], List[str]] = None,
+        delete_synonyms: Union[List[dict], List[str]] = None,
+        add_existing_ids: List[dict] = None,
+        delete_existing_ids: List[dict] = None,
+    ) -> dict:
         """ Updates pre-existing entity as long as the api_key is from the account that created it.
 
             :param ilx_id: Interlex IRI, curie, or fragment of entity to update.
@@ -815,203 +799,180 @@ class InterLexClient(InterlexSession):
             )
         """
         ilx_id = self.get_ilx_fragment(ilx_id)
-        template_entity_input = {k: v for k,
-                                 v in locals().copy().items() if k != 'self'}
-        if template_entity_input.get('superclass'):
-            template_entity_input['superclass'] = self.get_ilx_fragment(
-                template_entity_input['superclass'])
+        template_entity_input = {k: v for k, v in locals().copy().items() if k != "self"}
+        if template_entity_input.get("superclass"):
+            template_entity_input["superclass"] = self.get_ilx_fragment(template_entity_input["superclass"])
         if add_synonyms or delete_synonyms or add_existing_ids or delete_existing_ids or superclass:
             existing_entity = self.get_entity(ilx_id)
-            existing_entity.pop('curie')
-            existing_entity.pop('annotations')
-            if not existing_entity['id']:
-                raise self.EntityDoesNotExistError(
-                    f'ilx_id provided {ilx_id} does not exist')
+            existing_entity.pop("curie")
+            existing_entity.pop("annotations")
+            if not existing_entity["id"]:
+                raise self.EntityDoesNotExistError(f"ilx_id provided {ilx_id} does not exist")
         else:
-            existing_entity = {'ilx': ilx_id}
+            existing_entity = {"ilx": ilx_id}
         if label:
-            existing_entity['label'] = label
+            existing_entity["label"] = label
         if type:
-            existing_entity['type'] = type
+            existing_entity["type"] = type
         if definition:
-            existing_entity['definition'] = definition
+            existing_entity["definition"] = definition
         if comment:
-            existing_entity['comment'] = comment
+            existing_entity["comment"] = comment
         if superclass:
-            existing_entity['superclasses'] = self._process_superclass(
-                superclass)
+            existing_entity["superclasses"] = self._process_superclass(superclass)
         # BUG: superclass needs id as superclass_tid
-        elif existing_entity.get('superclasses'):
-            existing_entity['superclasses'] = [
-                {'superclass_tid': existing_entity['superclasses'][0]['id']}]
+        elif existing_entity.get("superclasses"):
+            existing_entity["superclasses"] = [{"superclass_tid": existing_entity["superclasses"][0]["id"]}]
         if cid:
-            existing_entity['cid'] = cid
+            existing_entity["cid"] = cid
         if orig_cid:
-            existing_entity['orig_cid'] = orig_cid
+            existing_entity["orig_cid"] = orig_cid
         if status:
-            existing_entity['status'] = status
+            existing_entity["status"] = status
         # Clean duplicates in these entities.
         # API does not have the same filters as Interface so this step is needed.
         # TODO duplicate annotation php to syn and exids so we can remove this if possible
-        existing_entity['synonyms'] = self._remove_duplicate_records(
-            existing_entity.get('synonyms', []),
-            on=['literal', 'type'],
+        existing_entity["synonyms"] = self._remove_duplicate_records(
+            existing_entity.get("synonyms", []),
+            on=["literal", "type"],
         )
-        existing_entity['existing_ids'] = self._remove_duplicate_records(
-            existing_entity.get('existing_ids', []),
-            on=['curie', 'iri'],
+        existing_entity["existing_ids"] = self._remove_duplicate_records(
+            existing_entity.get("existing_ids", []),
+            on=["curie", "iri"],
         )
         # delete is before add to give a sudo update functionality
         if delete_synonyms:
-            existing_entity['synonyms'] = self._remove_records(
-                ref_records=existing_entity.get('synonyms', []),
+            existing_entity["synonyms"] = self._remove_records(
+                ref_records=existing_entity.get("synonyms", []),
                 records=self._process_synonyms(delete_synonyms),
-                on=['literal', 'type'],
+                on=["literal", "type"],
             )
         if add_synonyms:
-            existing_entity['synonyms'] = self._merge_records(
-                ref_records=existing_entity.get('synonyms', []),
+            existing_entity["synonyms"] = self._merge_records(
+                ref_records=existing_entity.get("synonyms", []),
                 records=self._process_synonyms(add_synonyms),
-                on=['literal'],
-                alt=['type']
+                on=["literal"],
+                alt=["type"],
             )
         if delete_existing_ids:
-            existing_entity['existing_ids'] = self._remove_records(
-                ref_records=existing_entity.get('existing_ids', []),
+            existing_entity["existing_ids"] = self._remove_records(
+                ref_records=existing_entity.get("existing_ids", []),
                 records=self._process_existing_ids(delete_existing_ids),
-                on=['curie', 'iri'],
+                on=["curie", "iri"],
             )
         if add_existing_ids:
-            existing_entity['existing_ids'] = self._merge_records(
-                ref_records=existing_entity.get('existing_ids', []),
+            existing_entity["existing_ids"] = self._merge_records(
+                ref_records=existing_entity.get("existing_ids", []),
                 records=self._process_existing_ids(add_existing_ids),
-                on=['curie', 'iri'],
+                on=["curie", "iri"],
             )
-        if existing_entity['existing_ids']:
-            existing_entity['existing_ids'] = self._process_existing_ids(
-                existing_entity['existing_ids'])
+        if existing_entity["existing_ids"]:
+            existing_entity["existing_ids"] = self._process_existing_ids(existing_entity["existing_ids"])
         # existing_entity['batch-elastic'] = 'true'
-        resp = self._post(
-            f"term/edit/{existing_entity['ilx']}", data=existing_entity)
+        resp = self._post(f"term/edit/{existing_entity['ilx']}", data=existing_entity)
         # BUG: server response is bad and needs to actually search again to get proper format
-        entity = resp.json()['data']
-        entity['superclass'] = entity.pop('superclasses')
-        if entity['superclass']:
-            entity['superclass'] = 'http://uri.interlex.org/base/' + \
-                entity['superclass'][0]['ilx']
+        entity = resp.json()["data"]
+        entity["superclass"] = entity.pop("superclasses")
+        if entity["superclass"]:
+            entity["superclass"] = "http://uri.interlex.org/base/" + entity["superclass"][0]["ilx"]
         # todo add a sanity check here
         return entity
 
     def get_annotation_via_tid(self, tid: str) -> dict:
-        """ Gets Annotation by its term id.
+        """Gets Annotation by its term id.
 
         :param tid: Term ID.
         :return: Record of InterLex entity Annotation.
 
         # todo add example
         """
-        return self._get(f'term/get-annotations/{tid}').json()['data']
+        return self._get(f"term/get-annotations/{tid}").json()["data"]
 
-    def add_annotation(self,
-                       term_ilx_id: str,
-                       annotation_type_ilx_id: str,
-                       annotation_value: str,
-                       real_server_resp: bool = False) -> dict:
-        """ Adding an annotation value to a prexisting entity
+    def add_annotation(
+        self,
+        term_ilx_id: str,
+        annotation_type_ilx_id: str,
+        annotation_value: str,
+        comment: str = None,
+        real_server_resp: bool = False,
+    ) -> dict:
+        """Adding an annotation value to a prexisting entity
 
-            An annotation exists as 3 different parts ([1] -> [2] -> [3]):
-                1. entity with type term, TermSet, cde, fde, or pde
-                2. entity with type annotation
-                3. string value of the annotation
+        An annotation exists as 3 different parts ([1] -> [2] -> [3]):
+            1. entity with type term, TermSet, cde, fde, or pde
+            2. entity with type annotation
+            3. string value of the annotation
 
-            :param term_ilx_id: Term ILX ID
-            :param annotation_type_ilx_id: Annototation ILX ID
-            :param annotation_value: Annotation value
-            :param real_server_resp: Will return term IDs and versions, not InterLex IDs. 
-            :return: Annotation Record
+        :param term_ilx_id: Term ILX ID
+        :param annotation_type_ilx_id: Annototation ILX ID
+        :param annotation_value: Annotation value
+        :param real_server_resp: Will return term IDs and versions, not InterLex IDs.
+        :return: Annotation Record
 
-            >>> self.add_annotation(
-                    term_ilx_id='ilx_0101431',  # brain ILX ID
-                    annotation_type_ilx_id='ilx_0381360',  # hasDbXref ILX ID
-                    annotation_value='http://neurolex.org/wiki/birnlex_796'  # any string value
-                )
+        >>> self.add_annotation(
+                term_ilx_id='ilx_0101431',  # brain ILX ID
+                annotation_type_ilx_id='ilx_0381360',  # hasDbXref ILX ID
+                annotation_value='http://neurolex.org/wiki/birnlex_796'  # any string value
+            )
         """
         tid = self.get_ilx_fragment(term_ilx_id)
         annotation_tid = self.get_ilx_fragment(annotation_type_ilx_id)
-        data = {'tid': tid,
-                'annotation_tid': annotation_tid,
-                'value': annotation_value}
-        resp = self._post('term/add-annotation',
-                          data={**data, **{'batch-elastic': 'true'}})
+        data = {"tid": tid, "annotation_tid": annotation_tid, "value": annotation_value, "comment": comment}
+        resp = self._post("term/add-annotation", data={**data, **{"batch-elastic": "true"}})
         if resp.status_code == 200:
-            log.warning(f"Annotation: "
-                        f"[{data['tid']}] -> [{data['annotation_tid']}] -> [{data['value']}]"
-                        f"has already been added")
+            log.warning(f"Annotation: " f"[{data['tid']}] -> [{data['annotation_tid']}] -> [{data['value']}]" f"has already been added")
         if real_server_resp:
-            data = resp.json()['data']
+            data = resp.json()["data"]
         return data
 
-    def withdraw_annotation(self,
-                            term_ilx_id: str,
-                            annotation_type_ilx_id: str,
-                            annotation_value: str) -> Optional[dict]:
-        """ If annotation doesnt exist, add it
+    def withdraw_annotation(self, term_ilx_id: str, annotation_type_ilx_id: str, annotation_value: str) -> Optional[dict]:
+        """If annotation doesnt exist, add it
 
-            :param term_ilx_id: Term ILX ID
-            :param annotation_type_ilx_id: Annototation ILX ID
-            :param annotation_value: Annotation value
-            :return: Empty Annotation Record
+        :param term_ilx_id: Term ILX ID
+        :param annotation_type_ilx_id: Annototation ILX ID
+        :param annotation_value: Annotation value
+        :return: Empty Annotation Record
         """
         term_data = self.get_entity(term_ilx_id)
-        if not term_data['id']:
-            raise self.EntityDoesNotExistError(
-                'term_ilx_id: ' + term_ilx_id + ' does not exist'
-            )
+        if not term_data["id"]:
+            raise self.EntityDoesNotExistError("term_ilx_id: " + term_ilx_id + " does not exist")
         anno_data = self.get_entity(annotation_type_ilx_id)
-        if not anno_data['id']:
-            raise self.EntityDoesNotExistError(
-                'annotation_type_ilx_id: ' + annotation_type_ilx_id
-                + ' does not exist'
-            )
-        entity_annotations = self.get_annotation_via_tid(term_data['id'])
-        annotation_id = ''
+        if not anno_data["id"]:
+            raise self.EntityDoesNotExistError("annotation_type_ilx_id: " + annotation_type_ilx_id + " does not exist")
+        entity_annotations = self.get_annotation_via_tid(term_data["id"])
+        annotation_id = ""
         for annotation in entity_annotations:
-            if str(annotation['tid']) == str(term_data['id']):
-                if str(annotation['annotation_tid']) == str(anno_data['id']):
-                    if str(annotation['value']) == str(annotation_value):
-                        annotation_id = annotation['id']
+            if str(annotation["tid"]) == str(term_data["id"]):
+                if str(annotation["annotation_tid"]) == str(anno_data["id"]):
+                    if str(annotation["value"]) == str(annotation_value):
+                        annotation_id = annotation["id"]
                         break
         if not annotation_id:
-            log.warning('Annotation you wanted to delete does not exist')
+            log.warning("Annotation you wanted to delete does not exist")
             return None
         data = {
-            'tid': term_data['id'],  # for delete
-            'annotation_tid': anno_data['id'],  # for delete
-            'value': annotation_value,  # for delete
-            'term_version': term_data['version'],
-            'annotation_term_version': anno_data['version'],
-            'withdrawn': '1',
+            "tid": term_data["id"],  # for delete
+            "annotation_tid": anno_data["id"],  # for delete
+            "value": annotation_value,  # for delete
+            "term_version": term_data["version"],
+            "annotation_term_version": anno_data["version"],
+            "withdrawn": "1",
         }
-        output = self._post(
-            f"term/edit-annotation/{annotation_id}", data=data).json()['data']
+        output = self._post(f"term/edit-annotation/{annotation_id}", data=data).json()["data"]
         return output
 
     def get_relationship_via_tid(self, tid: str) -> dict:
-        """ Get Entity Relationship by its term ID.
+        """Get Entity Relationship by its term ID.
 
         :param tid: Term ID
         :return: Record of InterLex entity Relationship.
 
         # todo add example
         """
-        return self._get(f'term/get-relationships/{tid}').json()['data']
+        return self._get(f"term/get-relationships/{tid}").json()["data"]
 
-    def add_relationship(self,
-                         entity1_ilx: str,
-                         relationship_ilx: str,
-                         entity2_ilx: str,
-                         real_server_resp: bool = False) -> dict:
-        """ Adds relationship connection in Interlex
+    def add_relationship(self, entity1_ilx: str, relationship_ilx: str, entity2_ilx: str, real_server_resp: bool = False) -> dict:
+        """Adds relationship connection in Interlex
 
         A relationship exists as 3 different parts:
             1. entity with type term, cde, fde, or pde
@@ -1022,25 +983,18 @@ class InterLexClient(InterlexSession):
         entity1_ilx = self.get_ilx_fragment(entity1_ilx)
         relationship_ilx = self.get_ilx_fragment(relationship_ilx)
         entity2_ilx = self.get_ilx_fragment(entity2_ilx)
-        data = {'term1_id': entity1_ilx,
-                'relationship_tid': relationship_ilx,
-                'term2_id': entity2_ilx}
+        data = {"term1_id": entity1_ilx, "relationship_tid": relationship_ilx, "term2_id": entity2_ilx}
         # resp = self._post('term/add-relationship', data={**data, **{'batch-elastic': 'true'}})
-        resp = self._post('term/add-relationship', data=data)
+        resp = self._post("term/add-relationship", data=data)
 
         if resp.status_code == 200:
-            log.warning(f"Relationship:"
-                        f" [{data['term1_id']}] -> [{data['relationship_tid']}] -> [{data['term2_id']}]"
-                        f" has already been added")
+            log.warning(f"Relationship:" f" [{data['term1_id']}] -> [{data['relationship_tid']}] -> [{data['term2_id']}]" f" has already been added")
         # if real_server_resp:
-        data = resp.json()['data']
+        data = resp.json()["data"]
         return data
 
-    def withdraw_relationship(self,
-                              entity1_ilx: str,
-                              relationship_ilx: str,
-                              entity2_ilx: str) -> dict:
-        """ Adds relationship connection in Interlex
+    def withdraw_relationship(self, entity1_ilx: str, relationship_ilx: str, entity2_ilx: str) -> dict:
+        """Adds relationship connection in Interlex
 
         A relationship exists as 3 different parts:
             1. entity with type term, cde, fde, or pde
@@ -1049,48 +1003,43 @@ class InterLexClient(InterlexSession):
             3. entity with type term, cde, fde, or pde
         """
         entity1_data = self.get_entity(entity1_ilx)
-        if not entity1_data['id']:
-            raise self.EntityDoesNotExistError(
-                f'entity1_ilx: {entity1_data} does not exist')
+        if not entity1_data["id"]:
+            raise self.EntityDoesNotExistError(f"entity1_ilx: {entity1_data} does not exist")
         relationship_data = self.get_entity(relationship_ilx)
-        if not relationship_data['id']:
-            raise self.EntityDoesNotExistError(
-                f'relationship_ilx: {relationship_ilx} does not exist')
+        if not relationship_data["id"]:
+            raise self.EntityDoesNotExistError(f"relationship_ilx: {relationship_ilx} does not exist")
         entity2_data = self.get_entity(entity2_ilx)
-        if not entity2_data['id']:
-            raise self.EntityDoesNotExistError(
-                f'entity2_ilx: {entity2_data} does not exist')
+        if not entity2_data["id"]:
+            raise self.EntityDoesNotExistError(f"entity2_ilx: {entity2_data} does not exist")
         data = {
-            'term1_id': entity1_data['id'],  # entity1_data['id'],
+            "term1_id": entity1_data["id"],  # entity1_data['id'],
             # relationship_data['id'],
-            'relationship_tid': relationship_data['id'],
-            'term2_id': entity2_data['id'],  # entity2_data['id'],
-            'term1_version': entity1_data['version'],
-            'term2_version': entity2_data['version'],
-            'relationship_term_version': relationship_data['version'],
-            'withdrawn': '1',
+            "relationship_tid": relationship_data["id"],
+            "term2_id": entity2_data["id"],  # entity2_data['id'],
+            "term1_version": entity1_data["version"],
+            "term2_version": entity2_data["version"],
+            "relationship_term_version": relationship_data["version"],
+            "withdrawn": "1",
             # 'orig_uid': self.user_id,  # BUG: php lacks orig_uid update
         }
-        entity_relationships = self.get_relationship_via_tid(
-            entity1_data['id'])
+        entity_relationships = self.get_relationship_via_tid(entity1_data["id"])
         # TODO: parse through entity_relationships to see if we have a match; else print warning and return None
         relationship_id = None
         for relationship in entity_relationships:
-            if str(relationship['term1_id']) == str(entity1_data['id']):
-                if str(relationship['term2_id']) == str(entity2_data['id']):
-                    if str(relationship['relationship_tid']) == str(relationship_data['id']):
-                        relationship_id = relationship['id']
+            if str(relationship["term1_id"]) == str(entity1_data["id"]):
+                if str(relationship["term2_id"]) == str(entity2_data["id"]):
+                    if str(relationship["relationship_tid"]) == str(relationship_data["id"]):
+                        relationship_id = relationship["id"]
                         break
         if not relationship_id:
-            log.warning('Relationship you wanted to delete does not exist')
+            log.warning("Relationship you wanted to delete does not exist")
             return {}
-        output = self._post(f'term/edit-relationship/{relationship_id}',
-                            data={**data, **{'batch-elastic': 'true'}}).json()['data']
+        output = self._post(f"term/edit-relationship/{relationship_id}", data={**data, **{"batch-elastic": "true"}}).json()["data"]
         return output
 
     def upsert_entity(tid):
-        return self._post(f'/term/elastic/upsert/{tid}')
-    
-    def entity_tree(self, ilx_id: str, edges: list, direction: str = 'up') -> dict:
+        return self._post(f"/term/elastic/upsert/{tid}")
+
+    def entity_tree(self, ilx_id: str, edges: list, direction: str = "up") -> dict:
         ilx_id = self.get_ilx_fragment(ilx_id)
-        return self._get(f"term/subtree/{ilx_id}?direction={direction}&edges={','.join(edges)}").json()['data']
+        return self._get(f"term/subtree/{ilx_id}?direction={direction}&edges={','.join(edges)}").json()["data"]
